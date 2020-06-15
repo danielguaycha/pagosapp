@@ -1,0 +1,14 @@
+{
+    "cobro": "DIARIO",
+    "id": 235,
+    "credit_id": 12,
+    "total": 17.5,
+    "status": 1,
+    "mora": 0,
+    "number": 1,
+    "description": "Pendiente",
+    "client_id": 8,
+    "client_name": "ANDRÉS PEREZ",
+    "address_a": "Hsjaja",
+    "city_a": "Machala"
+}

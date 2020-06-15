@@ -9,6 +9,15 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pagosapp/src/config.dart';
 
+void ddHttp(String msg, {err}) {
+  if(!debug) return;
+  if(err == null) {
+    print("::Debug::> $msg");
+  } else {
+    var er = processError(err);
+    print("::$msg::> ${er['message']}");
+  }
+}
 
 // Monstrar una vista con el error
 Widget renderError(error, Function callback) {
@@ -109,6 +118,21 @@ Map<String, dynamic> processError(error) {
     }
   }
   return {'ok': false, 'message': 'Error desconocido, contacte con soporte #5'};
+}
+
+Widget renderNotFoundData(String msg) {
+  return Center(
+      child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: <Widget>[
+      Icon(FontAwesomeIcons.searchMinus, size: 60, color: Colors.blueGrey),
+      SizedBox(height: 15),
+      Text(msg,
+          style:
+              TextStyle(color: Colors.blueGrey, fontWeight: FontWeight.w500)),
+    ],
+  ));
 }
 
 Widget _defaultErrorContainer(

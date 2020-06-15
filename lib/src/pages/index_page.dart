@@ -15,12 +15,11 @@ class IndexPage extends StatelessWidget {
           crossAxisSpacing: 10.0,
           shrinkWrap: true,
           children: <Widget>[         
-            
             _btn(
                 context,
                 icon: FontAwesomeIcons.moneyBill,
                 color: Colors.blue[300],
-                text: 'Agregar Crédito',
+                text: 'Crédito',
                 click: (){
                   Navigator.pushNamed(context, 'credit_add');
                 }
@@ -29,9 +28,18 @@ class IndexPage extends StatelessWidget {
                 context,
                 icon: FontAwesomeIcons.users,
                 color: Colors.indigo,
-                text: 'Listado de Clientes',
+                text: 'Historia de Clientes',
                 click: (){
-                  Navigator.pushNamed(context, 'client_index');
+                  Navigator.pushNamed(context, 'client_list');
+                }
+            ),
+            _btn(
+                context,
+                icon: FontAwesomeIcons.moneyBillWave,
+                color: Colors.red,
+                text: 'Recaudación',
+                click: (){
+                  Navigator.pushNamed(context, 'payment');
                 }
             ),
           ],
