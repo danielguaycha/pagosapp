@@ -62,4 +62,3 @@ String dateForHumans2(DateTime currentTime) {
   }
   return "${currentTime.day}/${currentTime.month}/${currentTime.year}";
 }
-

@@ -1,7 +1,7 @@
 
 import 'package:pagosapp/env.dart';
 
-const debug = false;
+const debug = true;
 const buildVersion = 1.0; // incrementar segun la actualización en el server
 
 const urlProduction = 'app.detzerg.company';

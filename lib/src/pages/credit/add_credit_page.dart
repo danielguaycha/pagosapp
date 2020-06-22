@@ -15,7 +15,8 @@ import 'package:pagosapp/src/utils/utils.dart';
 import 'package:pagosapp/src/utils/validators.dart';
 
 class AddCreditPage extends StatefulWidget {
-  AddCreditPage({Key key}) : super(key: key);
+  final ClientHistory clientHistory;
+  AddCreditPage({Key key, this.clientHistory}) : super(key: key);
 
   @override
   _AddCreditPageState createState() => _AddCreditPageState();
@@ -34,6 +35,9 @@ class _AddCreditPageState extends State<AddCreditPage> {
   void initState() {
     this._credit = new Credit();
     super.initState();
+    if(widget.clientHistory != null){
+      _client = widget.clientHistory;
+    }
   }
 
   void _onSubmit() async {
@@ -52,7 +56,7 @@ class _AddCreditPageState extends State<AddCreditPage> {
       _credit = new Credit();
       _client = null;
      _scaffoldKey.currentState
-          .showSnackBar(customSnack("Crédito procesao con exito"));
+          .showSnackBar(customSnack("Crédito procesado con exito"));
     } else {
       _scaffoldKey.currentState
           .showSnackBar(customSnack(res.message, type: 'err'));
@@ -95,6 +99,10 @@ class _AddCreditPageState extends State<AddCreditPage> {
             snap: false,
             pinned: true,
             stretch: true,
+            // leading: new IconButton(
+            //   icon: new Icon(Icons.arrow_back, color: Colors.orange),
+            //   onPressed: () => print("Regresar!!!"),
+            // ), 
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               title:

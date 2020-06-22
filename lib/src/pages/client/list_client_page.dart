@@ -5,6 +5,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pagosapp/src/models/client/client_history.dart';
 import 'package:pagosapp/src/models/responser.dart';
+import 'package:pagosapp/src/pages/client/actions_client_page.dart';
 import 'package:pagosapp/src/providers/client_provider.dart';
 import 'package:pagosapp/src/utils/exepctions.dart';
 import 'package:pagosapp/src/utils/utils.dart';
@@ -182,10 +183,13 @@ class _ListClientPageState extends State<ListClientPage> {
               Text("${client.cobro}", style: TextStyle(fontWeight: FontWeight.w400))
             ],
           ) : null,
-          onTap: () {  
-            if(widget.returning)     
-              Navigator.pop(context, client);    
-          },          
+          onTap: () { 
+            if(widget.returning){
+              Navigator.pop(context, client);
+            }else{
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ActionsClient(clientData: client,)));
+            }
+          },
         ),
         actions: <Widget>[          
         ],
