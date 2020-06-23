@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pagosapp/src/models/client/client_history.dart';
 import 'package:pagosapp/src/models/credit.dart';
 import 'package:pagosapp/src/models/responser.dart';
+import 'package:pagosapp/src/pages/client/edit_client_page.dart';
 import 'package:pagosapp/src/pages/client/list_client_page.dart';
 import 'package:pagosapp/src/pages/client/new_client_page.dart';
 import 'package:pagosapp/src/pages/credit/widgets/credit_calc_component.dart';
@@ -23,72 +24,72 @@ class AddCreditPage extends StatefulWidget {
 }
 
 class _AddCreditPageState extends State<AddCreditPage> {
-
   ClientHistory _client;
   Credit _credit;
   ProgressLoader _loader;
-  final _scaffoldKey = GlobalKey<ScaffoldState>();    
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   Color _one = Style.primary[600];
   Color _two = Style.primary[500];
-  
+
   @override
   void initState() {
     this._credit = new Credit();
     super.initState();
-    if(widget.clientHistory != null){
+    if (widget.clientHistory != null) {
       _client = widget.clientHistory;
     }
   }
 
   void _onSubmit() async {
-    if(!_validate()) return;
+    if (!_validate()) return;
     int isOk = await Alert.confirm(context,
         title: "Confirmar",
-        content: "¿Está seguro que desea guardar este crédito?\nMonto: ${money(_credit.monto)} | Utilidad: ${_credit.utilidad}\nPlazo: ${_credit.plazo}\nCobro: ${_credit.cobro}\nCliente: ${_client.name} ");
-      if (isOk == 1) {
-        return;
-      }   
-    _loader.show(msg: "Procesando crédito, espere...\n\nSi ha proporcionado una prenda, es probable que tome algo de tiempo");
+        content:
+            "¿Está seguro que desea guardar este crédito?\nMonto: ${money(_credit.monto)} | Utilidad: ${_credit.utilidad}\nPlazo: ${_credit.plazo}\nCobro: ${_credit.cobro}\nCliente: ${_client.name} ");
+    if (isOk == 1) {
+      return;
+    }
+    _loader.show(
+        msg:
+            "Procesando crédito, espere...\n\nSi ha proporcionado una prenda, es probable que tome algo de tiempo");
     _credit.personId = _client.id;
 
     Responser res = await CreditProvider().store(_credit);
-     if (res.ok) {
+    if (res.ok) {
       _credit = new Credit();
       _client = null;
-     _scaffoldKey.currentState
+      _scaffoldKey.currentState
           .showSnackBar(customSnack("Crédito procesado con exito"));
     } else {
       _scaffoldKey.currentState
           .showSnackBar(customSnack(res.message, type: 'err'));
     }
     _loader.hide();
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
-  bool _validate(){
-    if(_client==null) {
+  bool _validate() {
+    if (_client == null) {
       toast("Seleccione un cliente");
       return false;
     }
-    if(_credit.plazo == null || _credit.cobro == null || _credit.utilidad == null) {
+    if (_credit.plazo == null ||
+        _credit.cobro == null ||
+        _credit.utilidad == null) {
       toast("Plazo, Recaudación y Utilidad son requeridos");
       return false;
-    }    
+    }
     return true;
   }
 
   @override
   Widget build(BuildContext context) {
-
-    
-    if(_loader == null) {
+    if (_loader == null) {
       _loader = new ProgressLoader(context);
     }
 
     return Scaffold(
-      key: _scaffoldKey,     
+      key: _scaffoldKey,
       body: CustomScrollView(
         slivers: <Widget>[
           SliverAppBar(
@@ -102,7 +103,7 @@ class _AddCreditPageState extends State<AddCreditPage> {
             // leading: new IconButton(
             //   icon: new Icon(Icons.arrow_back, color: Colors.orange),
             //   onPressed: () => print("Regresar!!!"),
-            // ), 
+            // ),
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               title:
@@ -125,7 +126,13 @@ class _AddCreditPageState extends State<AddCreditPage> {
                   child: IconButton(
                     icon: Icon(FontAwesomeIcons.userEdit, size: 16),
                     onPressed: () {
-                      
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => EditClientPage(
+                                    clientId: _client.id,
+                                    status: 0,
+                                  )));
                     },
                     tooltip: 'Editar cliente',
                   )),
@@ -139,7 +146,7 @@ class _AddCreditPageState extends State<AddCreditPage> {
                       });
                     },
                     tooltip: 'Remover cliente',
-                  )),                
+                  )),
             ],
           ),
           SliverToBoxAdapter(
@@ -147,82 +154,86 @@ class _AddCreditPageState extends State<AddCreditPage> {
           ),
         ],
       ),
-      floatingActionButton: _client == null ? null :
-          FloatingActionButton(onPressed: _onSubmit, child: Icon(Icons.save)),
+      floatingActionButton: _client == null
+          ? null
+          : FloatingActionButton(onPressed: _onSubmit, child: Icon(Icons.save)),
     );
   }
 
   _creditDataOrBlank() {
-    if(_client == null ) {
+    if (_client == null) {
       return Container(
-        margin: EdgeInsets.only(top: 60),
-        child: Center(child: Text("Buscar o seleccionar un cliente para empezar", style: TextStyle(color: Colors.grey[500])))
-      );
+          margin: EdgeInsets.only(top: 60),
+          child: Center(
+              child: Text("Buscar o seleccionar un cliente para empezar",
+                  style: TextStyle(color: Colors.grey[500]))));
     }
-    return CreditCalcComponent(credit: _credit);    
+    return CreditCalcComponent(credit: _credit);
   }
 
   _buttonsClient() {
-    return  Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: FlatButton(
-                  padding: EdgeInsets.all(15),
-                  onPressed: () async {
-                    var client = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => NewClientPage()));
-                    if (client != null) {        
-                      setState(() {
-                        _client = client;
-                      });             
-                      toast("Cliente agregado con éxito");             
-                    }      
-                  },
-                  child: Column(
-                    children: <Widget>[
-                      Icon(FontAwesomeIcons.userPlus, color: Colors.white60),                      
-                      SizedBox(height: 10),
-                      Text("Agregar cliente",
-                          style: TextStyle(                              
-                              fontWeight: FontWeight.w500, color: Colors.white70)),
-                    ],
-                  ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.max,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: FlatButton(
+                padding: EdgeInsets.all(15),
+                onPressed: () async {
+                  var client = await Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => NewClientPage()));
+                  if (client != null) {
+                    setState(() {
+                      _client = client;
+                    });
+                    toast("Cliente agregado con éxito");
+                  }
+                },
+                child: Column(
+                  children: <Widget>[
+                    Icon(FontAwesomeIcons.userPlus, color: Colors.white60),
+                    SizedBox(height: 10),
+                    Text("Agregar cliente",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white70)),
+                  ],
                 ),
               ),
-              Expanded(
-                child: FlatButton(                  
-                  padding: EdgeInsets.all(15), 
-                  onPressed: () async {
-                    var client = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ListClientPage(returning: true,)));
-                    if (client != null) {       
-                      setState(() {
-                        _client = client;
-                      });
-                    }
-                  },
-                  child: Column(
-                    children: <Widget>[
-                      Icon(FontAwesomeIcons.search, color: Colors.white60),
-                      SizedBox(height: 10),
-                      Text("Seleccionar Cliente",
-                          style: TextStyle(                         
-                              fontWeight: FontWeight.w500, color: Colors.white70)),
-                    ],
-                  ),
+            ),
+            Expanded(
+              child: FlatButton(
+                padding: EdgeInsets.all(15),
+                onPressed: () async {
+                  var client = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ListClientPage(
+                                returning: true,
+                              )));
+                  if (client != null) {
+                    setState(() {
+                      _client = client;
+                    });
+                  }
+                },
+                child: Column(
+                  children: <Widget>[
+                    Icon(FontAwesomeIcons.search, color: Colors.white60),
+                    SizedBox(height: 10),
+                    Text("Seleccionar Cliente",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white70)),
+                  ],
                 ),
               ),
-            ],
-          )
-        ],
+            ),
+          ],
+        )
+      ],
     );
   }
 }

@@ -35,6 +35,7 @@ class _ActionsClientState extends State<ActionsClient> {
                   MaterialPageRoute(
                       builder: (context) => EditClientPage(
                             clientId: widget.clientData.id,
+                            status: 1,
                           )));
             }),
             _btn(context,

@@ -24,7 +24,11 @@ import 'package:permission_handler/permission_handler.dart';
 
 class EditClientPage extends StatefulWidget {
   final int clientId;
-  EditClientPage({Key key, @required this.clientId}) : super(key: key);
+  /**
+   * Status => 1 ir a Credito; 
+   */
+  final int status;
+  EditClientPage({Key key, @required this.clientId, @required this.status}) : super(key: key);
 
   @override
   _EditClientPageState createState() => _EditClientPageState();
@@ -75,25 +79,36 @@ class _EditClientPageState extends State<EditClientPage> {
         centerTitle: true,
       ),
       body: _waitData(),
-      floatingActionButton: SpeedDial(
-        animatedIcon: AnimatedIcons.menu_close,
-        children: [
-          SpeedDialChild(
-              child: Icon(FontAwesomeIcons.upload),
-              label: "Actualizar",
-              onTap: () {
-                updateDate();
-              }),
-          SpeedDialChild(
-              child: Icon(FontAwesomeIcons.creditCard),
-              label: "Actualizar y Agregar credito",
-              onTap: () {
-                updateDate();
-                openCredit();
-              }),
-        ],
+      floatingActionButton:
+      //  SpeedDial(
+      //   animatedIcon: AnimatedIcons.menu_close,
+      //   children: [
+      //     SpeedDialChild(
+      //         child: Icon(FontAwesomeIcons.upload),
+      //         label: "Actualizar",
+      //         onTap: () {
+      //           updateDate();
+      //         }),
+      //     SpeedDialChild(
+      //         child: Icon(FontAwesomeIcons.creditCard),
+      //         label: "Actualizar y Agregar credito",
+      //         onTap: () {
+      //           updateDate();
+      //           openCredit();
+      //         }),
+      //   ],
+      // ),
+      FloatingActionButton(
+        onPressed: (){
+          updateDate();
+          if(widget.status == 1){
+            print("Nos vamos a credito");
+            openCredit();
+          }else{
+            print("No nos vamos a credito");
+          }
+        }, child: Icon(FontAwesomeIcons.upload, color: Style.primary[800],)
       ),
-      //FloatingActionButton(onPressed: _submit, child: Icon(FontAwesomeIcons.solidSave, color: Style.primary[800],)),
     );
   }
 
