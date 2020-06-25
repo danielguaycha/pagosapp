@@ -14,6 +14,7 @@ import 'package:pagosapp/src/models/responser.dart';
 import 'package:pagosapp/src/pages/credit/add_credit_page.dart';
 import 'package:pagosapp/src/plugins/contacts.dart';
 import 'package:pagosapp/src/plugins/file_manager.dart';
+import 'package:pagosapp/src/plugins/messages.dart';
 import 'package:pagosapp/src/plugins/progress_loader.dart';
 import 'package:pagosapp/src/plugins/style.dart';
 import 'package:pagosapp/src/providers/client_provider.dart';
@@ -99,8 +100,8 @@ class _EditClientPageState extends State<EditClientPage> {
       //   ],
       // ),
       FloatingActionButton(
-        onPressed: (){
-          updateDate();
+        onPressed: () async {
+          await updateDate();
           if(widget.status == 1){
             print("Nos vamos a credito");
             openCredit();
@@ -430,19 +431,19 @@ class _EditClientPageState extends State<EditClientPage> {
       }
     }
 
-    Responser res = await ClientProvider().store(_client);
-    if (res.ok) {
-      _cm.addContact(
-          name: _client.name, phoneA: _client.phoneA, phoneB: _client.phoneB);
-      // _loader.hide();
-      int id = parseInt(res.data['id']);
-      Navigator.pop(
-          context, ClientHistory(name: _client.name.toUpperCase(), id: id));
-    } else {
-      _scaffoldKey.currentState
-          .showSnackBar(customSnack(res.message, type: 'err'));
-      // _loader.hide();
-    }
+    // Responser res = await ClientProvider().store(_client);
+    // if (res.ok) {
+    //   _cm.addContact(
+    //       name: _client.name, phoneA: _client.phoneA, phoneB: _client.phoneB);
+    //   // _loader.hide();
+    //   int id = parseInt(res.data['id']);
+    //   Navigator.pop(
+    //       context, ClientHistory(name: _client.name.toUpperCase(), id: id));
+    // } else {
+    //   _scaffoldKey.currentState
+    //       .showSnackBar(customSnack(res.message, type: 'err'));
+    //   // _loader.hide();
+    // }
   }
 
   //* Funciones
@@ -490,14 +491,39 @@ class _EditClientPageState extends State<EditClientPage> {
     if (!_formKey.currentState.validate()) return;
     _formKey.currentState.save();
 
+    int isOk = await Alert.confirm(context,
+        title: "¿Desea actualizar?", content: "El cliente: ${_client.name}");
+    if (isOk == 1) {
+      return;
+    }
+    _requestPerms();
+    // _loader.show(msg: "Procesando cliente, espere");
+
+    // geolocalización
+    if (_geoloc || _geolocB) {
+      final loc = await Geolocator()
+          .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      if (_geoloc) {
+        _client.latA = loc.latitude;
+        _client.lngA = loc.longitude;
+      }
+      if (_geolocB) {
+        _client.latB = loc.latitude;
+        _client.lngB = loc.longitude;
+      }
+    }
+
+
     Responser res;
     res = await ClientProvider().upDateClient(_client);
-
+    print("Respuesta: ${res.ok}");
     if (res.ok) {
-      print("Todo bien actualizado");
+      toast('Datos actualizados', type: 'ok');
+      // print("Todo bien actualizado");
     } else {
-      print("Algo salio mal");
+      // print("Algo salio mal");
       _error = res.message;
+      toast('Algo salio mal | $_error', type: 'err');
     }
   }
 

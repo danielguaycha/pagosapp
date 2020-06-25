@@ -8,6 +8,7 @@ import 'package:pagosapp/src/pages/client/edit_client_page.dart';
 import 'package:pagosapp/src/pages/client/list_client_page.dart';
 import 'package:pagosapp/src/pages/client/new_client_page.dart';
 import 'package:pagosapp/src/pages/credit/widgets/credit_calc_component.dart';
+import 'package:pagosapp/src/pages/home_page.dart';
 import 'package:pagosapp/src/plugins/messages.dart';
 import 'package:pagosapp/src/plugins/progress_loader.dart';
 import 'package:pagosapp/src/plugins/style.dart';
@@ -100,10 +101,14 @@ class _AddCreditPageState extends State<AddCreditPage> {
             snap: false,
             pinned: true,
             stretch: true,
-            // leading: new IconButton(
-            //   icon: new Icon(Icons.arrow_back, color: Colors.orange),
-            //   onPressed: () => print("Regresar!!!"),
-            // ),
+            leading: new IconButton(
+              icon: new Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: (){
+                Navigator.pushAndRemoveUntil(context,
+                MaterialPageRoute(
+                      builder: (context) => HomePage()) , (route) => false);
+                      },
+            ),
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               title:

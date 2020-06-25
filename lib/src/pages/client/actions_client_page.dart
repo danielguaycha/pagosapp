@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pagosapp/src/models/client/client_history.dart';
 import 'package:pagosapp/src/pages/client/edit_client_page.dart';
+import 'package:pagosapp/src/pages/payments/lists_payments.dart';
 
 class ActionsClient extends StatefulWidget {
   final ClientHistory clientData;
@@ -42,7 +43,14 @@ class _ActionsClientState extends State<ActionsClient> {
                 icon: FontAwesomeIcons.moneyBillWave,
                 color: Colors.red,
                 text: 'Recaudación', click: () {
-              Navigator.pushNamed(context, 'payment');
+
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ListsPaymentsPage(
+                            clientId: widget.clientData.id,
+                          )));
+
             }),
             _btn(context,
                 icon: FontAwesomeIcons.history,
