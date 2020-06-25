@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:easy_alert/easy_alert.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
+import 'package:pagosapp/src/plugins/image_net.dart';
 import 'package:pagosapp/src/plugins/style.dart';
 
 // confirm
@@ -164,6 +165,16 @@ Widget previewImageLoad({tag: '', Function onRemove, @required File img}) {
     leading: Image.file(img),
     title: Text("$tag cargada"),
     subtitle: Text("${(img.lengthSync() / 1024).roundToDouble()} kb"),
+  );
+}
+
+Widget previewImageNet({tag: '', Function onRemove, String url}) {
+  if(url == null) return Center();
+  return ListTile(
+    contentPadding: EdgeInsets.all(0),
+    trailing: IconButton(onPressed: onRemove, icon: Icon(Icons.delete)),
+    leading: imageNet(url),
+    title: Text("$tag"),    
   );
 }
 

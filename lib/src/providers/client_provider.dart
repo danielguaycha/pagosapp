@@ -8,7 +8,7 @@ class ClientProvider {
    final _http = HttpClient().dio;
   
     
-   Future<Responser> store(Client c) async {
+   Future<Responser> store(Client c) async {     
       FormData formData = FormData.fromMap({
         "name": c.name,
         "fb": c.fb,

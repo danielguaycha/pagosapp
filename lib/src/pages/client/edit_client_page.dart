@@ -15,6 +15,7 @@ import 'package:pagosapp/src/pages/credit/add_credit_page.dart';
 import 'package:pagosapp/src/plugins/contacts.dart';
 import 'package:pagosapp/src/plugins/file_manager.dart';
 import 'package:pagosapp/src/plugins/messages.dart';
+import 'package:pagosapp/src/plugins/perms.dart';
 import 'package:pagosapp/src/plugins/progress_loader.dart';
 import 'package:pagosapp/src/plugins/style.dart';
 import 'package:pagosapp/src/providers/client_provider.dart';
@@ -64,8 +65,8 @@ class _EditClientPageState extends State<EditClientPage> {
   @override
   void initState() {
     this._client = new Client();
-    _loader = false;
     this._cm = new ContactManager();
+    _loader = false;
     _loadClientData(idClient: widget.clientId);
     super.initState();
   }
@@ -81,34 +82,9 @@ class _EditClientPageState extends State<EditClientPage> {
       ),
       body: _waitData(),
       floatingActionButton:
-      //  SpeedDial(
-      //   animatedIcon: AnimatedIcons.menu_close,
-      //   children: [
-      //     SpeedDialChild(
-      //         child: Icon(FontAwesomeIcons.upload),
-      //         label: "Actualizar",
-      //         onTap: () {
-      //           updateDate();
-      //         }),
-      //     SpeedDialChild(
-      //         child: Icon(FontAwesomeIcons.creditCard),
-      //         label: "Actualizar y Agregar credito",
-      //         onTap: () {
-      //           updateDate();
-      //           openCredit();
-      //         }),
-      //   ],
-      // ),
       FloatingActionButton(
-        onPressed: () async {
-          await updateDate();
-          if(widget.status == 1){
-            print("Nos vamos a credito");
-            openCredit();
-          }else{
-            print("No nos vamos a credito");
-          }
-        }, child: Icon(FontAwesomeIcons.upload, color: Style.primary[800],)
+        onPressed: () {_submitUpdate(context);},
+        child: Icon(FontAwesomeIcons.upload, color: Style.primary[800],)
       ),
     );
   }
@@ -249,7 +225,7 @@ class _EditClientPageState extends State<EditClientPage> {
   //* Wigets
   Widget _waitData() {
     if (_loader) {
-      return loader(text: "Cargando clientes...");
+      return loader(text: "Cargando cliente...");
     }
 
     if (_error != null) {
@@ -263,10 +239,9 @@ class _EditClientPageState extends State<EditClientPage> {
     return _body();
   }
 
-  Widget _showReferenceOne(context) {
-    print("Reference: ${_client.refOne}");
+  Widget _showReferenceOne(context) {    
     // _client.refOne = null;
-    if (_client.refOne == null && !_loadRefOne) {
+    if (_client.refOne == null && _client.refA == null && !_loadRefOne) {
       //? si no esta cargado nada
       return buttonImage(onCamera: () {
         _loadReferenceOne(source: ImageSource.camera);
@@ -278,7 +253,8 @@ class _EditClientPageState extends State<EditClientPage> {
       return miniLoader();
     } else {
       //? Si ya esta cargada
-      return previewImageLoad(
+      if(_client.refA == null) {
+        return previewImageLoad(
           tag: "Referencia",
           img: _client.refOne,
           onRemove: () {
@@ -286,11 +262,23 @@ class _EditClientPageState extends State<EditClientPage> {
               _client.refOne = null;
             });
           });
+      } 
+      else {
+        return previewImageNet(
+          tag: 'Referencia actual',
+          url: _client.refA,
+          onRemove: () {
+            setState(() {
+              _client.refA = null;
+            });
+          }
+        );
+      }      
     }
   }
 
   Widget _showReferenceTwo(context) {
-    if (_client.refTwo == null && !_loadRefTwo) {
+    if (_client.refTwo == null && !_loadRefTwo && _client.refB == null) {
       //? si no esta cargado nada
       return buttonImage(onCamera: () {
         _loadReferenceTwo(source: ImageSource.camera);
@@ -302,14 +290,26 @@ class _EditClientPageState extends State<EditClientPage> {
       return miniLoader();
     } else {
       //? Si ya esta cargada
-      return previewImageLoad(
-          tag: "Referencia",
-          img: _client.refTwo,
+      if(_client.refB == null) {
+        return previewImageLoad(
+            tag: "Referencia",
+            img: _client.refTwo,
+            onRemove: () {
+              setState(() {
+                _client.refTwo = null;
+              });
+            });
+      }
+      else
+        return previewImageNet(
+          tag: 'Referencia actual',
+          url: _client.refB,
           onRemove: () {
             setState(() {
-              _client.refTwo = null;
+              _client.refB = null;
             });
-          });
+          }
+        );    
     }
   }
 
@@ -322,10 +322,11 @@ class _EditClientPageState extends State<EditClientPage> {
           icon: FontAwesomeIcons.mapMarkerAlt,
           swicthed: _geoloc),
       subtitle: swicthSubtitle(text: "¿En esta ubicación se harán los cobros?"),
-      onChanged: (value) {
-        setState(() {
-          _geoloc = value;
-        });
+      onChanged: (value) async{
+        if(!await locationPerms()) {
+          _geoloc = false;
+        } else _geoloc = value;
+        setState(() { });
       },
     );
   }
@@ -339,10 +340,13 @@ class _EditClientPageState extends State<EditClientPage> {
           icon: FontAwesomeIcons.mapMarkerAlt,
           swicthed: _geolocB),
       subtitle: swicthSubtitle(text: "¿En esta ubicación se harán los cobros?"),
-      onChanged: (value) {
-        setState(() {
-          _geolocB = value;
-        });
+      onChanged: (value) async {
+        if(!await locationPerms()) {
+          _geolocB = false;
+        } else {        
+          _geolocB = value;      
+        }
+        setState(() {});
       },
     );
   }
@@ -404,48 +408,6 @@ class _EditClientPageState extends State<EditClientPage> {
     );
   }
 
-  //* Guardar el formulario
-  void _submit() async {
-    if (!_formKey.currentState.validate()) return;
-    _formKey.currentState.save();
-
-    int isOk = await Alert.confirm(context,
-        title: "¿Desea guardar?", content: "El cliente: ${_client.name}");
-    if (isOk == 1) {
-      return;
-    }
-    _requestPerms();
-    // _loader.show(msg: "Procesando cliente, espere");
-
-    // geolocalización
-    if (_geoloc || _geolocB) {
-      final loc = await Geolocator()
-          .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      if (_geoloc) {
-        _client.latA = loc.latitude;
-        _client.lngA = loc.longitude;
-      }
-      if (_geolocB) {
-        _client.latB = loc.latitude;
-        _client.lngB = loc.longitude;
-      }
-    }
-
-    // Responser res = await ClientProvider().store(_client);
-    // if (res.ok) {
-    //   _cm.addContact(
-    //       name: _client.name, phoneA: _client.phoneA, phoneB: _client.phoneB);
-    //   // _loader.hide();
-    //   int id = parseInt(res.data['id']);
-    //   Navigator.pop(
-    //       context, ClientHistory(name: _client.name.toUpperCase(), id: id));
-    // } else {
-    //   _scaffoldKey.currentState
-    //       .showSnackBar(customSnack(res.message, type: 'err'));
-    //   // _loader.hide();
-    // }
-  }
-
   //* Funciones
   // Referencias
   void _loadReferenceOne({@required ImageSource source}) async {
@@ -479,7 +441,7 @@ class _EditClientPageState extends State<EditClientPage> {
 
     if (res.ok) {
       var results = res.data;
-      _client = Client.fromJson(json.encode(results));
+      _client = Client.fromJson(json.encode(results));      
     } else {
       _error = res.message;
     }
@@ -487,19 +449,14 @@ class _EditClientPageState extends State<EditClientPage> {
     setState(() {});
   }
 
-  void updateDate() async {
+  void _submitUpdate(context) async {
     if (!_formKey.currentState.validate()) return;
-    _formKey.currentState.save();
+    _formKey.currentState.save();    
 
-    int isOk = await Alert.confirm(context,
-        title: "¿Desea actualizar?", content: "El cliente: ${_client.name}");
-    if (isOk == 1) {
+    if(!await confirm(context, title: "¿Desea actualizar?", content: "Esta seguro de cambiar los datos de este cliente")){
       return;
     }
-    _requestPerms();
-    // _loader.show(msg: "Procesando cliente, espere");
-
-    // geolocalización
+    //TODO: Modificar el contacto queda pendiente aqui
     if (_geoloc || _geolocB) {
       final loc = await Geolocator()
           .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
@@ -513,36 +470,24 @@ class _EditClientPageState extends State<EditClientPage> {
       }
     }
 
-
     Responser res;
     res = await ClientProvider().upDateClient(_client);
-    print("Respuesta: ${res.ok}");
     if (res.ok) {
       toast('Datos actualizados', type: 'ok');
-      // print("Todo bien actualizado");
-    } else {
-      // print("Algo salio mal");
+      _openCredit();
+    } else {    
       _error = res.message;
       toast('Algo salio mal | $_error', type: 'err');
     }
   }
 
-  void openCredit() {
+  void _openCredit() {
     ClientHistory clientHistory = new ClientHistory();
     clientHistory.name = _client.name;
-    clientHistory.id = _client.id;
-    print("abriendo credito de ${clientHistory.name}");
+    clientHistory.id = _client.id;    
     Navigator.push(context, MaterialPageRoute(
       builder: (context) => AddCreditPage(
         clientHistory: clientHistory,
     )));
-  }
-
-  //* Permisos
-  void _requestPerms() async {
-    final status = await Permission.contacts.status;
-    if (!status.isGranted) {
-      Permission.contacts.request();
-    }
   }
 }

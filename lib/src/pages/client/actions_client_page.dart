@@ -18,47 +18,48 @@ class _ActionsClientState extends State<ActionsClient> {
         appBar: AppBar(
           title: Text("${widget.clientData.name}"),
         ),
-        body: GridView.count(
-          primary: true,
-          crossAxisCount: 1,
-          padding: EdgeInsets.only(left: 60, right: 60, top: 20, bottom: 20),
-          childAspectRatio: 1.7,
-          mainAxisSpacing: 10.0,
-          crossAxisSpacing: 10.0,
-          shrinkWrap: true,
-          children: <Widget>[
-            _btn(context,
-                icon: FontAwesomeIcons.edit,
-                color: Colors.blue[300],
-                text: 'Editar usuario', click: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => EditClientPage(
-                            clientId: widget.clientData.id,
-                            status: 1,
-                          )));
-            }),
-            _btn(context,
-                icon: FontAwesomeIcons.moneyBillWave,
-                color: Colors.red,
-                text: 'Recaudación', click: () {
-
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ListsPaymentsPage(
-                            clientId: widget.clientData.id,
-                          )));
-
-            }),
-            _btn(context,
-                icon: FontAwesomeIcons.history,
-                color: Colors.indigo,
-                text: 'Historia de Clientes', click: () {
-              Navigator.pushNamed(context, 'client_list');
-            }),
-          ],
+        body: Center(
+          child: GridView.count(
+            primary: true,
+            crossAxisCount: 1,
+            physics: ScrollPhysics(),
+            padding: EdgeInsets.only(left: 60, right: 60, top: 10, bottom: 10),
+            childAspectRatio: 1.9,
+            mainAxisSpacing: 15.0,
+            crossAxisSpacing: 10.0,
+            shrinkWrap: true,
+            children: <Widget>[
+              _btn(context,
+                  icon: FontAwesomeIcons.pencilAlt,
+                  color: Colors.blue,
+                  text: 'Editar', click: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => EditClientPage(
+                              clientId: widget.clientData.id,
+                              status: 1,
+                            )));
+              }),
+              _btn(context,
+                  icon: FontAwesomeIcons.dollarSign,
+                  color: Colors.green,
+                  text: 'Recaudación', click: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ListsPaymentsPage(
+                              clientId: widget.clientData.id,
+                            )));
+              }),
+              _btn(context,
+                  icon: FontAwesomeIcons.history,
+                  color: Colors.indigo,
+                  text: 'Historial de Clédito', click: () {
+                Navigator.pushNamed(context, 'client_list');
+              }),
+            ],
+          ),
         ));
   }
 
@@ -74,12 +75,18 @@ class _ActionsClientState extends State<ActionsClient> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Icon(icon, color: color),
+          Icon(
+            icon,
+            color: color,
+            size: 30,
+          ),
           SizedBox(height: 10),
           Text(
             "$text",
-            style:
-                TextStyle(color: Colors.black45, fontWeight: FontWeight.w400),
+            style: TextStyle(
+                color: Colors.black45,
+                fontWeight: FontWeight.w600,
+                fontSize: 16),
           )
         ],
       ),

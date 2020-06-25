@@ -11,6 +11,8 @@ import 'package:pagosapp/src/models/client/client_history.dart';
 import 'package:pagosapp/src/models/responser.dart';
 import 'package:pagosapp/src/plugins/contacts.dart';
 import 'package:pagosapp/src/plugins/file_manager.dart';
+import 'package:pagosapp/src/plugins/messages.dart';
+import 'package:pagosapp/src/plugins/perms.dart';
 import 'package:pagosapp/src/plugins/progress_loader.dart';
 import 'package:pagosapp/src/plugins/style.dart';
 import 'package:pagosapp/src/providers/client_provider.dart';
@@ -58,7 +60,7 @@ class _NewClientPageState extends State<NewClientPage> {
         title: Text("Nuevo cliente"),
         centerTitle: true,    
       ),
-      floatingActionButton: FloatingActionButton(onPressed: _submit, child: Icon(FontAwesomeIcons.solidSave, color: Style.primary[800],)),
+      floatingActionButton: FloatingActionButton(onPressed:(){ _submit(context);}, child: Icon(FontAwesomeIcons.solidSave, color: Style.primary[800],)),
       body: SingleChildScrollView(
         reverse: true,
         child: Padding(          
@@ -169,21 +171,20 @@ class _NewClientPageState extends State<NewClientPage> {
   }
 
   //* Guardar el formulario
-  void _submit() async {        
-
-    
+  void _submit(context) async {          
     if (!_formKey.currentState.validate()) return;
     _formKey.currentState.save();
-    
-    int isOk = await Alert.confirm(context,
-        title: "¿Desea guardar?",
-        content: "El cliente: ${_client.name}");
-    if (isOk == 1) {    
+
+    if(!await contactPerms()) {
+      toast("El permiso es requerido");
       return;
     }
-    _requestPerms();
-    _loader.show(msg: "Procesando cliente, espere");
+        
+    if (!await confirm(context, title: "¿Desea guardar el cliente?", content: "Nombre: ${_client.name}\nTelf.: ${_client.phoneA}-${_client.phoneB}")) {    
+      return;
+    }
 
+    _loader.show(msg: "Procesando cliente, espere");
     // geolocalización
     if(_geoloc || _geolocB) {
       final loc = await Geolocator()
@@ -293,10 +294,11 @@ class _NewClientPageState extends State<NewClientPage> {
           swicthed: _geoloc
         ),
         subtitle: swicthSubtitle(text: "¿En esta ubicación se harán los cobros?"),
-        onChanged: (value) {
-          setState(() {
-            _geoloc = value;                
-          });
+        onChanged: (value) async {
+          if(!await locationPerms()) {
+            _geoloc = false;
+          } else _geoloc = value;                
+          setState(() { });
         },
       );
   }
@@ -311,10 +313,11 @@ class _NewClientPageState extends State<NewClientPage> {
           swicthed: _geolocB
         ),
         subtitle: swicthSubtitle(text: "¿En esta ubicación se harán los cobros?"),
-        onChanged: (value) {
-          setState(() {       
-            _geolocB = value;           
-          });
+        onChanged: (value) async{
+          if(!await locationPerms()) { 
+            _geolocB = false;
+          } else _geolocB = value;           
+          setState(() { });
         },
       );
   }  
@@ -371,13 +374,5 @@ class _NewClientPageState extends State<NewClientPage> {
       suggestion.toLowerCase().startsWith(input.toLowerCase()), 
       itemSorter: (String a, String b) {return -1;},      
     ); 
-  }
-
-  //* Permisos
-  void _requestPerms() async {
-    final status = await Permission.contacts.status;
-    if (!status.isGranted) {        
-       Permission.contacts.request();
-    }
   }
 }
