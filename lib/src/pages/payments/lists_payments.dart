@@ -1,76 +1,85 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:pagosapp/src/models/payments/list_payments.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:pagosapp/src/models/client/client_history.dart';
+import 'package:pagosapp/src/models/payments/payment_List.dart';
+import 'package:pagosapp/src/models/payments/payment_row.dart';
+import 'package:pagosapp/src/models/payments/payment_store.dart';
 import 'package:pagosapp/src/models/responser.dart';
 import 'package:pagosapp/src/plugins/messages.dart';
 import 'package:pagosapp/src/providers/payment_provider.dart';
+import 'package:pagosapp/src/utils/exepctions.dart';
 import 'package:pagosapp/src/utils/utils.dart';
 import 'package:pagosapp/src/utils/validators.dart';
 
 class ListsPaymentsPage extends StatefulWidget {
-  final int clientId;
-  ListsPaymentsPage({Key key, @required this.clientId}) : super(key: key);
+  final ClientHistory client;
+  ListsPaymentsPage({Key key, @required this.client}) : super(key: key);
 
   @override
   _ListsPaymentsPageState createState() => _ListsPaymentsPageState();
 }
 
-class Recaudacion {
-  String date;
-  double value;
-  bool pay;
-
-  Recaudacion(this.date, this.value, this.pay);
-}
-
-List<Recaudacion> list = List();
-DataPaymentClient dataPaymentClient;
-bool multipleSelect = false;
-List<int> selectedList = List();
-List<PaymentRequest> selectedPayments = List();
+PaymentList _payList;
+bool _multiple = false;
+List<Pay> _selectedPays = List();
+bool _loader = false;
+String _error;
 
 class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
   @override
   void initState() {
-    // TODO: implement initState
+    this._getPays();
     super.initState();
-    _loadDataPays(1);
-
-    list.add(Recaudacion("01-01-2020", 10.0, false));
-    list.add(Recaudacion("02-01-2020", 10.0, false));
-    list.add(Recaudacion("03-01-2020", 10.0, false));
-    list.add(Recaudacion("04-01-2020", 10.0, false));
-    list.add(Recaudacion("05-01-2020", 10.0, false));
-    list.add(Recaudacion("06-01-2020", 10.0, false));
-    list.add(Recaudacion("07-01-2020", 10.0, false));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("${dataPaymentClient.name}"),
+        title: Text("${widget.client.name}"),
         actions: <Widget>[
           Visibility(
-            visible: selectedPayments.length > 0,
+            visible: _multiple,
             child: IconButton(
-              icon: Icon(Icons.cancel),
+              icon: Tooltip(
+                  message: "Limpiar selección",
+                  child: Icon(FontAwesomeIcons.times)),
               onPressed: () {
-                selectedPayments.clear();
-                dataPaymentClient.payments.forEach((element) { element.mora = false;});
-                multipleSelect = false;
-                setState(() {
-                  
+                _selectedPays.clear();
+                _payList.payments.forEach((element) {
+                  element.selected = false;
                 });
+                _multiple = false;
+                setState(() {});
                 // _select(choices[0]);
               },
             ),
           ),
         ],
       ),
-      body: _body(),
+      body: _customFutureBody(),
     );
   }
+  // 1. fist load
+  Widget _customFutureBody() {
+    if(_loader) {
+      return loader(text: "Cargando cobros...");
+    }
 
+    if(_error != null) {
+      return renderError(_error, () {});
+    }
+
+    if (_payList.payments.length <= 0) {
+      return renderNotFoundData("No hay cobros para estre crédito");
+    }
+
+    return _body();
+  }
+
+  // 2. Render Body
   Widget _body() {
     return Column(
       children: <Widget>[
@@ -79,14 +88,14 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
-            Text(dateForHumans2(dataPaymentClient.fInicio)),
-            Text(dateForHumans2(dataPaymentClient.fFin)),
+            Text(dateForHumans2(_payList.fInicio)),
+            Text(dateForHumans2(_payList.fFin)),
           ],
         ),
         Divider(),
-        Text(money(dataPaymentClient.total) +
+        Text(money(_payList.total) +
             " / " +
-            money(dataPaymentClient.totalPagado)),
+            money(_payList.totalPagado)),
         Divider(),
         Expanded(child: Container(child: _grid())),
         Divider(),
@@ -96,14 +105,14 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
           children: <Widget>[
             RaisedButton(child: Text("No pago"), onPressed: () {}),
             RaisedButton(
-                child: Text(selectedPayments.length > 0
-                    ? "Pagar ${selectedPayments.length}"
+                child: Text(_selectedPays.length > 0
+                    ? "Pagar ${_selectedPays.length}"
                     : "Abono"),
                 onPressed: () {
-                  if(selectedPayments.length <= 0){
+                  if (_selectedPays.length <= 0) {
                     _generarAbono();
-                  }else{
-                  _generatePays();
+                  } else {
+                    _generatePays();
                   }
                   // selectedPayments.clear();
 
@@ -115,193 +124,179 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
     );
   }
 
+  // 3. Render Grid
   Widget _grid() {
     return GridView.builder(
-        itemCount: dataPaymentClient.payments.length,
+        itemCount: _payList.payments.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
-          childAspectRatio: 1.0,
+          childAspectRatio: 1,
+          crossAxisSpacing: 3,
+          mainAxisSpacing: 9
         ),
         itemBuilder: (context, index) {
+          PaymentListChild p = _payList.payments[index];
           return Container(
-            padding: EdgeInsets.all(0.0),
-            margin: EdgeInsets.all(0.0),
+            padding: EdgeInsets.all(0),
             decoration: BoxDecoration(
-                color: Colors.blue,
-                border: Border.all(
-                    color: getColorStatus(
-                        dataPaymentClient.payments[index].status),
-                    width: 1.0)),
+                border: Border(top: BorderSide( //                    <--- top side
+                  color: _getColorStatus(p.status), width: 4.0
+                )
+              )
+            ),
             child: RaisedButton(
-              padding: EdgeInsets.only(top: 10.0),
-              textColor:
-                  getColorStatus(dataPaymentClient.payments[index].status),
+              padding: EdgeInsets.all(0),
+              textColor: _getColorStatus(p.status),
+              disabledColor: Colors.grey[100],
+              disabledElevation: 2,
               color: Colors.white,
-              elevation: 0.0,
-              onLongPress: () {
-                // dataPaymentClient.payments[index].mora = true;              
-                multipleSelect = true;
+              elevation: 3,
+              onLongPress: p.status == PaymentList.COBRADO ? null : () {
+                _multiple = true;
+                _setSelected(p);
                 setState(() {});
               },
-              onPressed: () async {
-                if (!multipleSelect) {
-                  // if(selectedPayments.length > 0){
-                  selectedPayments.clear();
-                  selectedPayments.add(PaymentRequest(
-                      id: dataPaymentClient.payments[index].id,
-                      total: parseDouble(
-                          dataPaymentClient.payments[index].abono)));
+              onPressed: p.status == PaymentList.COBRADO ? null : () async {
+                if (!_multiple) {
+                  _selectedPays.clear();
+                  _selectedPays.add(Pay(pay: p.id, total: parseDouble(p.abono)));
                   _generatePays();
-                  // }
+                } else {
+                  _setSelected(p);
+                  setState(() {});
                 }
               },
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Text(dateForHumans2(
-                              dataPaymentClient.payments[index].date)),
-                          Text(money(dataPaymentClient.payments[index].abono)),
-                        ],
-                      )
-                    ],
-                  ),
-                  Visibility(
-                    visible: (dataPaymentClient.payments[index].status == 1 &&
-                        multipleSelect),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.end,
+              child:Stack(
                       children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          children: <Widget>[
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Text(dateForHumans2(p.date), style: TextStyle(color: _getColorStatus(p.status))),
+                                Text(money(p.abono), style: TextStyle(fontSize: 17, color: _getColorStatus(p.status))),
+                              ],
+                            ),
+
+                          ],
+                        ),
                         Visibility(
-                          // visible: !list[index].pay,
-                          child: Checkbox(
-                              value: dataPaymentClient.payments[index].mora,
-                              onChanged: (v) {
-                                if (v) {
-                                  selectedPayments.add(
-                                    PaymentRequest(
-                                    id: dataPaymentClient.payments[index].id,
-                                    total: parseDouble(dataPaymentClient.payments[index].abono
-                                    )));
-
-                                  // selectedPayments.add(dataPaymentClient.payments[index]);
-                                  // selectedList.add(index);
-                                } else {
-                                  print("Deseleccion");
-
-                                  selectedPayments.removeWhere((element) => element.id == dataPaymentClient.payments[index].id);
-
-
-                                  // selectedPayments.remove(
-                                  //   PaymentRequest(
-                                  //   id: dataPaymentClient.payments[index].id,
-                                  //   total: double.parse(dataPaymentClient.payments[index].abono
-                                  //   )));
-
-                                  // selectedPayments.remove(dataPaymentClient.payments[index]);
-
-                                  // selectedList.remove(index);
-                                }
-                                dataPaymentClient.payments[index].mora = v;
-                                print("Value: $v");
-                                setState(() {});
-                              }),
+                          visible: _multiple && p.status != PaymentList.COBRADO,
+                          child: Positioned(
+                            bottom: -10,
+                            right: -10,
+                            child: Checkbox(
+                                value: _payList.payments[index].selected,
+                                onChanged: (v) {
+                                  if (v) {
+                                    _selectedPays.add(Pay(
+                                        pay: _payList.payments[index].id,
+                                        total: parseDouble(_payList
+                                            .payments[index].abono)));
+                                  } else {
+                                    _selectedPays.removeWhere((element) => element.pay == _payList.payments[index].id);
+                                  }
+                                  _payList.payments[index].selected = v;
+                                  setState(() {});
+                                }),
+                          ),
                         )
                       ],
                     ),
-                  )
-                ],
-              ),
-            ),
+                ),
           );
         });
   }
 
-  /* Metodos */
-  void _loadDataPays(int id) async {
-    Responser res = await PaymentProvider().listsPays(id);
-
-    if (res.ok) {
-      var results = res.data;
-      dataPaymentClient = DataPaymentClient.fromJson(results);
+  //**Http request
+  void _getPays() async {
+    _loader = true;
+    _selectedPays.clear();
+    setState(() {});
+    Responser res = await PaymentProvider().listsPays(widget.client.credit);
+    if(res.ok) {
+      _payList = PaymentList.fromJson(res.data);
     } else {
-      toast(res.message, type: 'err');
+      _error = res.message;
     }
-
+    _loader = false;
     setState(() {});
   }
 
-  void _generarAbono() async {
-    String monto = await inputDialog(context, title: "Ingrese el monto", decoration: "Cantidad");
+  /* Métodos */
+  void _setSelected(PaymentListChild p) {
+    if(p.status == PaymentList.COBRADO) {return;}
 
-    Responser res = await PaymentProvider().abonoPorCredito(1, parseDouble(monto));
+    if(!p.selected) {
+      _selectedPays.add(Pay(pay: p.id, total: parseDouble(p.abono)));
+      p.selected = true;
+    } else {
+      _selectedPays.removeWhere((element) => element.pay == p.id);
+      p.selected = false;
+    }
+  }
+
+  void _generarAbono() async {
+    String monto = await inputDialog(context,
+        title: "Ingrese el monto", decoration: "Cantidad");
+
+    Responser res =
+        await PaymentProvider().abonoPorCredito(1, parseDouble(monto));
 
     if (res.ok) {
       toast(res.message, type: 'ok');
     } else {
       toast(res.message, type: 'err');
     }
-
   }
 
   void _generatePays() async {
     String msg = "¿Está seguro que desea procesar este pago?";
     String title = "Confirmar";
     double total = 0;
-    if(selectedPayments.length < 1){
+    if (_selectedPays.length < 1) {
       return;
     }
 
-    if(selectedPayments.length > 1){
-      selectedPayments.forEach((element) {total = element.total + total; });
+    if (_selectedPays.length > 1) {
+      _selectedPays.forEach((element) {
+        total = element.total + total;
+      });
       title = "Confirmar total ${money(total)}";
-      msg = "¿Está seguro que desea procesar ${selectedPayments.length} pagos con un total de ${money(total)}?";
+      msg =
+          "¿Está seguro que desea procesar ${_selectedPays.length} pagos con un total de ${money(total)}?";
     }
 
-    
-    bool v = await confirm(context,
-    title: title,
-        content: msg);
+    bool v = await confirm(context, title: title, content: msg);
 
     if (!v) {
       return;
     }
 
     // int id, List<Payment> pay) async {
-    Responser res = await PaymentProvider().payForCredit(1, selectedPayments);
+    Responser res = await PaymentProvider().payForCredit(1, _selectedPays);
 
-    selectedPayments.clear();
-    dataPaymentClient.payments.forEach((element) { element.mora = false;});
-    multipleSelect = false;
+    _selectedPays.clear();
+    _payList.payments.forEach((element) {
+      element.selected = false;
+    });
+    _multiple = false;
 
     if (res.ok) {
       toast("Pagos realizados", type: 'ok');
-      selectedPayments.clear();
+      _selectedPays.clear();
     } else {
       toast(res.message, type: 'err');
     }
-    
-
-
   }
 
-  Color getColorStatus(int status) {
+  Color _getColorStatus(int status) {
     switch (status) {
       case 1:
-        return Colors.black;
+        return Colors.black54;
         break;
       case 2:
         return Colors.green;
@@ -311,7 +306,7 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
         break;
 
       default:
-        return Colors.black;
+        return Colors.black87;
     }
   }
 }

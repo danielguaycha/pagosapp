@@ -1,7 +1,8 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:pagosapp/src/models/payments/list_payments.dart';
+import 'package:pagosapp/src/models/payments/payment_List.dart';
+import 'package:pagosapp/src/models/payments/payment_store.dart';
 import 'package:pagosapp/src/models/responser.dart';
 import 'package:pagosapp/src/plugins/http.dart';
 import 'package:pagosapp/src/utils/exepctions.dart';
@@ -49,27 +50,19 @@ class PaymentProvider {
 
   //Listar historial de pagos 26-06-2020
   Future<dynamic> listsPays(id) async {
+    print("Pidiendo datos de pagos...");
     Response res = await _http.get("/pays/$id");
     return Responser.fromJson(res.data);
   }
 
   //Pago normal por Id de crédito 26-06-2020
-  Future<Responser> payForCredit(int id, List<PaymentRequest> pay) async {
+  Future<Responser> payForCredit(int id, List<Pay> pay) async {
 
-    var json = jsonEncode(pay.map((e) => e.toJson()).toList());
-
-    var  body = {
-      "pays" : json
-    };
-
-    print("Body: $body");
-    
-    final Map<String, dynamic> data = jsonDecode(body.toString());
-    FormData formData = FormData.fromMap(data);
+    PaymentStore ps = new PaymentStore(pays: pay);
     
     try {
 
-      Response res = await _http.post('/pay/$id', data: formData);
+      Response res = await _http.post('/pay/$id', data: ps.toJson());
       
       return Responser.fromJson(res.data);
     } catch (e) {

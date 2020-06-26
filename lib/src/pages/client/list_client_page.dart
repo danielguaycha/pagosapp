@@ -187,7 +187,7 @@ class _ListClientPageState extends State<ListClientPage> {
             if(widget.returning){
               Navigator.pop(context, client);
             }else{
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ActionsClient(clientData: client,)));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ActionsClient(clientData: client)));
             }
           },
         ),

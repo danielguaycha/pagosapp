@@ -43,19 +43,20 @@ class _ActionsClientState extends State<ActionsClient> {
               }),
               _btn(context,
                   icon: FontAwesomeIcons.dollarSign,
-                  color: Colors.green,
-                  text: 'Recaudación', click: () {
+                  subtitle: widget.clientData.credit == null ? "Aún no tiene créditos" : "",
+                  color: widget.clientData.credit == null ? Colors.grey[500] : Colors.green,                  
+                  text: 'Recaudación', click: widget.clientData.credit == null ? null : () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => ListsPaymentsPage(
-                              clientId: widget.clientData.id,
+                              client: widget.clientData,
                             )));
               }),
               _btn(context,
                   icon: FontAwesomeIcons.history,
                   color: Colors.indigo,
-                  text: 'Historial de Clédito', click: () {
+                  text: 'Historial de Crédito', click: () {
                 Navigator.pushNamed(context, 'client_list');
               }),
             ],
@@ -64,7 +65,7 @@ class _ActionsClientState extends State<ActionsClient> {
   }
 
   RaisedButton _btn(BuildContext context,
-      {String text: '',
+      {String text: '', String subtitle,
       IconData icon: FontAwesomeIcons.icons,
       Color color: Colors.orange,
       @required void Function() click}) {
@@ -72,6 +73,7 @@ class _ActionsClientState extends State<ActionsClient> {
       elevation: 1,
       color: Colors.white,
       splashColor: color,
+      disabledColor: Colors.grey[300],
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -87,7 +89,8 @@ class _ActionsClientState extends State<ActionsClient> {
                 color: Colors.black45,
                 fontWeight: FontWeight.w600,
                 fontSize: 16),
-          )
+          ),
+          (subtitle == null || subtitle == '') ? Center() : Text("$subtitle") 
         ],
       ),
       onPressed: click,

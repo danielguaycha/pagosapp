@@ -4,12 +4,18 @@
 
 import 'dart:convert';
 
-DataPaymentClient dataPaymentClientFromJson(String str) => DataPaymentClient.fromJson(json.decode(str));
+import 'package:pagosapp/src/utils/validators.dart';
 
-String dataPaymentClientToJson(DataPaymentClient data) => json.encode(data.toJson());
+PaymentList dataPaymentClientFromJson(String str) => PaymentList.fromJson(json.decode(str));
 
-class DataPaymentClient {
-    DataPaymentClient({
+String dataPaymentClientToJson(PaymentList data) => json.encode(data.toJson());
+
+class PaymentList {
+    static const MORA = -1;
+    static const PENDIENTE = 1;
+    static const COBRADO = 2;
+
+    PaymentList({
         this.name,
         this.id,
         this.fInicio,
@@ -24,20 +30,20 @@ class DataPaymentClient {
     int id;
     DateTime fInicio;
     DateTime fFin;
-    String total;
+    double total;
     int status;
     double totalPagado;
-    List<Payment> payments;
+    List<PaymentListChild> payments;
 
-    factory DataPaymentClient.fromJson(Map<String, dynamic> json) => DataPaymentClient(
+    factory PaymentList.fromJson(Map<String, dynamic> json) => PaymentList(
         name: json["name"],
         id: json["id"],
-        fInicio: DateTime.parse(json["f_inicio"]),
-        fFin: DateTime.parse(json["f_fin"]),
-        total: json["total"],
+        fInicio: json["f_inicio"] == null ? null : DateTime.parse(json["f_inicio"]),
+        fFin: json["f_fin"] == null ? null : DateTime.parse(json["f_fin"]),
+        total: parseDouble(json["total"]),
         status: json["status"],
-        totalPagado: json["total_pagado"],
-        payments: List<Payment>.from(json["payments"].map((x) => Payment.fromJson(x))),
+        totalPagado: parseDouble(json["total_pagado"]),
+        payments: List<PaymentListChild>.from(json["payments"].map((x) => PaymentListChild.fromJson(x))),
     );
 
     Map<String, dynamic> toJson() => {
@@ -52,28 +58,30 @@ class DataPaymentClient {
     };
 }
 
-class Payment {
-    Payment({
+class PaymentListChild {
+    PaymentListChild({
         this.id,
         this.abono,
         this.status,
         this.mora,
         this.date,
         this.number,
+        this.selected: false,
     });
 
     int id;
-    String abono;
+    double abono;
     int status;
     bool mora;
     DateTime date;
     int number;
+    bool selected;
 
-    factory Payment.fromJson(Map<String, dynamic> json) => Payment(
+    factory PaymentListChild.fromJson(Map<String, dynamic> json) => PaymentListChild(
         id: json["id"],
-        abono: json["abono"],
+        abono: parseDouble(json["abono"]),
         status: json["status"],
-        mora: json["mora"],
+        mora: parseBool(json["mora"]),
         date: DateTime.parse(json["date"]),
         number: json["number"],
     );
@@ -85,26 +93,5 @@ class Payment {
         "mora": mora,
         "date": "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}",
         "number": number,
-    };
-}
-
-
-class PaymentRequest {
-    PaymentRequest({
-        this.id,
-        this.total
-    });
-
-    int id;
-    double total;
-
-    factory PaymentRequest.fromJson(Map<String, dynamic> json) => PaymentRequest(
-        id: json["pay"],
-        total: json["total"]
-    );
-
-    Map<String, dynamic> toJson() => {
-        "pay": id,
-        "total": total
     };
 }

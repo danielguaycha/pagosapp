@@ -15,6 +15,27 @@ int parseInt(dynamic number) {
   return int.parse("$number");
 }
 
+bool parseBool(dynamic b){
+  
+  if(b == null) return false;
+
+  if(b is bool) {
+    return b;
+  }
+
+  if(b is int) {
+    if(b == 1) return true;
+    else return false;
+  }
+
+  if(b is String) {
+    if(b.toLowerCase() == 'true') return true;
+    else return false;
+  }  
+  
+  return false;
+}
+
 //* Redondear numero
 double round(double val, int places) {
   return parseDouble(val.toStringAsFixed(2));

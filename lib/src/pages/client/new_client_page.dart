@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
-import 'package:easy_alert/easy_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -18,7 +17,6 @@ import 'package:pagosapp/src/plugins/style.dart';
 import 'package:pagosapp/src/providers/client_provider.dart';
 import 'package:pagosapp/src/utils/utils.dart';
 import 'package:pagosapp/src/utils/validators.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class NewClientPage extends StatefulWidget {
   NewClientPage({Key key}) : super(key: key);

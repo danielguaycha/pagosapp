@@ -2,9 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
-import 'package:easy_alert/easy_alert.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
@@ -16,19 +14,13 @@ import 'package:pagosapp/src/plugins/contacts.dart';
 import 'package:pagosapp/src/plugins/file_manager.dart';
 import 'package:pagosapp/src/plugins/messages.dart';
 import 'package:pagosapp/src/plugins/perms.dart';
-import 'package:pagosapp/src/plugins/progress_loader.dart';
 import 'package:pagosapp/src/plugins/style.dart';
 import 'package:pagosapp/src/providers/client_provider.dart';
 import 'package:pagosapp/src/utils/exepctions.dart';
 import 'package:pagosapp/src/utils/utils.dart';
-import 'package:pagosapp/src/utils/validators.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class EditClientPage extends StatefulWidget {
   final int clientId;
-  /**
-   * Status => 1 ir a Credito; 
-   */
   final int status;
   EditClientPage({Key key, @required this.clientId, @required this.status}) : super(key: key);
 
@@ -42,7 +34,7 @@ class _EditClientPageState extends State<EditClientPage> {
   bool _geoloc = false;
   bool _geolocB = false;
   Client _client;
-  ContactManager _cm;
+  //ContactManager _cm;
 
   bool _loader;
   String _error;
@@ -65,7 +57,7 @@ class _EditClientPageState extends State<EditClientPage> {
   @override
   void initState() {
     this._client = new Client();
-    this._cm = new ContactManager();
+    //this._cm = new ContactManager();
     _loader = false;
     _loadClientData(idClient: widget.clientId);
     super.initState();
