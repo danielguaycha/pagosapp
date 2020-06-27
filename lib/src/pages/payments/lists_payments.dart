@@ -105,7 +105,9 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
-            RaisedButton(child: Text("No pagó"), onPressed: () {}),
+            RaisedButton(child: Text("No pagó"), onPressed: () {
+              _noPago();
+            }),
             RaisedButton(
                 child: Text(_selectedPays.length > 0
                     ? "Pagar ${_selectedPays.length}"
@@ -245,7 +247,8 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
 
   void _generarAbono() async {
     String monto = await inputDialog(context,
-        title: "Ingrese el monto", decoration: "Cantidad");
+        title: "Ingrese el monto", decoration: "Cantidad", onlyDecimal: true);
+    
     Responser res =
         await PaymentProvider().abonoPorCredito(1, parseDouble(monto));
 
@@ -253,6 +256,25 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
       toast("Abono realizado con exito", type: 'ok');
       listaRecibida = List<DataPay>.from(res.data.map((x) => DataPay.fromJson(x)));
       _payList.totalPagado = _payList.totalPagado + parseDouble(monto);
+      _changeInfoPays();
+      print(listaRecibida.length);
+    } else {
+      toast(res.message, type: 'err');
+    }
+  }
+  void _noPago() async {
+    String date = dateForHumans2(_payList.payments.firstWhere((element) => element.status == 1).date);
+    bool v = await confirm(context, title: "Confirmacion", content: "¿Desea procesar el pago de la fecha $date como no pagado?");
+    if(!v){
+      return;
+    }
+    Responser res =
+        await PaymentProvider().abonoPorCredito(1, 0.0);
+
+    if (res.ok) {
+      toast("Transaccion procesada", type: 'ok');
+      listaRecibida = List<DataPay>.from(res.data.map((x) => DataPay.fromJson(x)));
+      _payList.totalPagado = _payList.totalPagado + 0.0;
       _changeInfoPays();
       print(listaRecibida.length);
     } else {

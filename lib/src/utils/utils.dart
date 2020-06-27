@@ -7,7 +7,9 @@ import 'package:easy_alert/easy_alert.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:pagosapp/src/plugins/image_net.dart';
+import 'package:pagosapp/src/plugins/messages.dart';
 import 'package:pagosapp/src/plugins/style.dart';
+import 'package:pagosapp/src/utils/validators.dart';
 
 // confirm
 Future<bool> confirm(context,
@@ -22,14 +24,18 @@ Future<bool> confirm(context,
 
 // input dialog
 Future inputDialog(BuildContext context,
-    {String title: "Ingresar el texto", String decoration: "Ingrese"}) async {
+    {String title: "Ingresar el texto", String decoration: "Ingrese", bool onlyDecimal}) async {
   String reason = "";
   return showDialog(
+    barrierDismissible: false,
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text('$title'),
           content: TextField(
+            keyboardType: onlyDecimal ? TextInputType.numberWithOptions(
+              decimal: true,
+              signed: false) : TextInputType.text,
             decoration: InputDecoration(hintText: "$decoration"),
             onChanged: (text) {
               reason = text;
@@ -45,7 +51,19 @@ Future inputDialog(BuildContext context,
             FlatButton(
               child: Text('Confirmar'),
               onPressed: () {
-                Navigator.of(context).pop(reason);
+                if(reason.length == 0){
+                  toast("Ingrese un valor", type: 'default');
+                }else{
+                  if(onlyDecimal){
+                    if(parseDouble(reason) > 0.0){
+                      Navigator.of(context).pop(reason);
+                    }else{
+                      toast("Ingrese un valor mayor que 0", type: 'default');
+                    }
+                  }else{
+                    Navigator.of(context).pop(reason);
+                  }
+                }
               },
             )
           ],
