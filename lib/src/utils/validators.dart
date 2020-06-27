@@ -2,6 +2,12 @@
 double parseDouble(dynamic number) {
   if(number==null)
     return 0.0;
+  if(number is String) {
+    number = number.toString().replaceAll(",", ".");
+    if(isNumeric(number)) {
+      return double.parse("$number");
+    } else return null;
+  }
   if (number is double)
     return number.toDouble();
   return double.parse("$number");

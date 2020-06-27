@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
-import 'package:pagosapp/src/models/payments/payment_List.dart';
 import 'package:pagosapp/src/models/payments/payment_store.dart';
 import 'package:pagosapp/src/models/responser.dart';
 import 'package:pagosapp/src/plugins/http.dart';

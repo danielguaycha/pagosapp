@@ -10,7 +10,6 @@ import 'package:pagosapp/src/models/client.dart';
 import 'package:pagosapp/src/models/client/client_history.dart';
 import 'package:pagosapp/src/models/responser.dart';
 import 'package:pagosapp/src/pages/credit/add_credit_page.dart';
-import 'package:pagosapp/src/plugins/contacts.dart';
 import 'package:pagosapp/src/plugins/file_manager.dart';
 import 'package:pagosapp/src/plugins/messages.dart';
 import 'package:pagosapp/src/plugins/perms.dart';

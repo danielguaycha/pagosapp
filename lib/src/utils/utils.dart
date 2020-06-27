@@ -33,6 +33,7 @@ Future inputDialog(BuildContext context,
         return AlertDialog(
           title: Text('$title'),
           content: TextField(
+            autofocus: true,
             keyboardType: onlyDecimal ? TextInputType.numberWithOptions(
               decimal: true,
               signed: false) : TextInputType.text,
@@ -55,7 +56,7 @@ Future inputDialog(BuildContext context,
                   toast("Ingrese un valor", type: 'default');
                 }else{
                   if(onlyDecimal){
-                    if(parseDouble(reason) > 0.0){
+                    if(parseDouble(reason) >= 0.0){
                       Navigator.of(context).pop(reason);
                     }else{
                       toast("Ingrese un valor mayor que 0", type: 'default');

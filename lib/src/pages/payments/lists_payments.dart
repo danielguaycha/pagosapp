@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pagosapp/src/models/client/client_history.dart';
@@ -142,13 +140,13 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
             padding: EdgeInsets.all(0),
             decoration: BoxDecoration(
                 border: Border(top: BorderSide( //                    <--- top side
-                  color: _getColorStatus(p.status, p.diasMora), width: 4.0
+                  color: _getColorStatus(p.status, p.diasMora, p.mora), width: 4.0
                 )
               )
             ),
             child: RaisedButton(
               padding: EdgeInsets.all(0),
-              textColor: _getColorStatus(p.status, p.diasMora),
+              textColor: _getColorStatus(p.status, p.diasMora, p.mora),
               disabledColor: Colors.grey[100],
               disabledElevation: 2,
               color: Colors.white,
@@ -163,8 +161,9 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
                   _selectedPays.clear();
                   _selectedPays.add(Pay(pay: p.id, total: parseDouble(p.abono)));
                   _generatePays();
-                } else {
+                } else {                  
                   _setSelected(p);
+                  setState(() {});
                 }
               },
               child:Stack(
@@ -177,8 +176,8 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
                             Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
-                                Text(dateForHumans2(p.date), style: TextStyle(color: _getColorStatus(p.status, p.diasMora))),
-                                Text(money(p.abono), style: TextStyle(fontSize: 17, color: _getColorStatus(p.status, p.diasMora))),
+                                Text(dateForHumans2(p.date), style: TextStyle(color: _getColorStatus(p.status, p.diasMora, p.mora))),
+                                Text(money(p.abono), style: TextStyle(fontSize: 17, color: _getColorStatus(p.status, p.diasMora, p.mora))),
                               ],
                             ),
 
@@ -235,7 +234,6 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
   /* Métodos */
   void _setSelected(PaymentListChild p) {
     if(p.status == PaymentList.COBRADO) {return;}
-
     if(!p.selected) {
       _selectedPays.add(Pay(pay: p.id, total: parseDouble(p.abono)));
       p.selected = true;
@@ -247,24 +245,26 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
 
   void _generarAbono() async {
     String monto = await inputDialog(context,
-        title: "Ingrese el monto", decoration: "Cantidad", onlyDecimal: true);
+        title: "Ingrese monto que desea abonar", decoration: "Cantidad \$", onlyDecimal: true);
+    
+    if(monto == null) return;
     
     Responser res =
-        await PaymentProvider().abonoPorCredito(1, parseDouble(monto));
+        await PaymentProvider().abonoPorCredito(widget.client.credit, parseDouble(monto));
 
     if (res.ok) {
-      toast("Abono realizado con exito", type: 'ok');
+      toast("Abono realizado con exito", type: 'ok');      
       listaRecibida = List<DataPay>.from(res.data.map((x) => DataPay.fromJson(x)));
       _payList.totalPagado = _payList.totalPagado + parseDouble(monto);
-      _changeInfoPays();
-      print(listaRecibida.length);
+      _changeInfoPays();      
     } else {
       toast(res.message, type: 'err');
     }
   }
+  
   void _noPago() async {
-    String date = dateForHumans2(_payList.payments.firstWhere((element) => element.status == 1).date);
-    bool v = await confirm(context, title: "Confirmacion", content: "¿Desea procesar el pago de la fecha $date como no pagado?");
+    var pay = _payList.payments.firstWhere((element) => element.status == 1);
+    bool v = await confirm(context, title: "Confirmar incumplimiento", content: "¿Desea procesar el pago de la fecha ${dateForHumans2(pay.date)} con valor de ${money(pay.abono)} como NO PAGADO?");
     if(!v){
       return;
     }
@@ -302,16 +302,14 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
     bool v = await confirm(context, title: title, content: msg);
 
     if (!v) {
+      _selectedPays.clear();
       return;
     }
 
-    // int id, List<Payment> pay) async {
-    Responser res = await PaymentProvider().payForCredit(1, _selectedPays);
+    Responser res = await PaymentProvider().payForCredit(widget.client.credit, _selectedPays);
 
     // _selectedPays.clear();
-    _payList.payments.forEach((element) {
-      element.selected = false;
-    });
+    _payList.payments.forEach((element) { element.selected = false; });
     _multiple = false;
 
     if(_selectedPays.length == 1){
@@ -327,9 +325,7 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
       // _selectedPays.clear();
     } else {
       toast(res.message, type: 'err');
-    }
-
-    _rety();
+    }    
   }
 
   void _changStatus(){
@@ -351,25 +347,27 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
           element.diasMora = paysRecibida.diasMora;
           element.abono = paysRecibida.abono;
           element.status = paysRecibida.status;
+          element.mora = paysRecibida.mora;    
+          print("${element.mora} = ${paysRecibida.mora}");
         }
       });
     }
+
+    listaRecibida.clear();
     // _selectedPays.clear();
     _rety();
   }
 
-
-
-  Color _getColorStatus(int status, int dias) {
+  Color _getColorStatus(int status, int dias, bool mora) {
     switch (status) {
       case 1:
         return Colors.black54;
         break;
-      case 2:
-        if(dias > 0){
-          return Colors.orange;
+      case 2:        
+        if(dias > 0 || mora == true){
+          return Colors.red;
         }else{
-        return Colors.green;
+          return Colors.green;
         }
         break;
       case -1:
