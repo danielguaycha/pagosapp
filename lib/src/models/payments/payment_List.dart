@@ -67,6 +67,7 @@ class PaymentListChild {
         this.date,
         this.number,
         this.selected: false,
+        this.diasMora: 0,
     });
 
     int id;
@@ -76,6 +77,7 @@ class PaymentListChild {
     DateTime date;
     int number;
     bool selected;
+    int diasMora;
 
     factory PaymentListChild.fromJson(Map<String, dynamic> json) => PaymentListChild(
         id: json["id"],
@@ -84,6 +86,7 @@ class PaymentListChild {
         mora: parseBool(json["mora"]),
         date: DateTime.parse(json["date"]),
         number: json["number"],
+        diasMora: json["dias_mora"],
     );
 
     Map<String, dynamic> toJson() => {
@@ -93,5 +96,6 @@ class PaymentListChild {
         "mora": mora,
         "date": "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}",
         "number": number,
+        "dias_mora" : diasMora,
     };
 }

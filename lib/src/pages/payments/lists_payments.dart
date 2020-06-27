@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pagosapp/src/models/client/client_history.dart';
+import 'package:pagosapp/src/models/payments/pay_receive.dart';
 import 'package:pagosapp/src/models/payments/payment_List.dart';
 import 'package:pagosapp/src/models/payments/payment_row.dart';
 import 'package:pagosapp/src/models/payments/payment_store.dart';
@@ -24,6 +25,7 @@ class ListsPaymentsPage extends StatefulWidget {
 PaymentList _payList;
 bool _multiple = false;
 List<Pay> _selectedPays = List();
+List<DataPay> listaRecibida = List();
 bool _loader = false;
 String _error;
 
@@ -103,7 +105,7 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
-            RaisedButton(child: Text("No pago"), onPressed: () {}),
+            RaisedButton(child: Text("No pagó"), onPressed: () {}),
             RaisedButton(
                 child: Text(_selectedPays.length > 0
                     ? "Pagar ${_selectedPays.length}"
@@ -114,8 +116,6 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
                   } else {
                     _generatePays();
                   }
-                  // selectedPayments.clear();
-
                   setState(() {});
                 }),
           ],
@@ -140,13 +140,13 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
             padding: EdgeInsets.all(0),
             decoration: BoxDecoration(
                 border: Border(top: BorderSide( //                    <--- top side
-                  color: _getColorStatus(p.status), width: 4.0
+                  color: _getColorStatus(p.status, p.diasMora), width: 4.0
                 )
               )
             ),
             child: RaisedButton(
               padding: EdgeInsets.all(0),
-              textColor: _getColorStatus(p.status),
+              textColor: _getColorStatus(p.status, p.diasMora),
               disabledColor: Colors.grey[100],
               disabledElevation: 2,
               color: Colors.white,
@@ -163,7 +163,6 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
                   _generatePays();
                 } else {
                   _setSelected(p);
-                  setState(() {});
                 }
               },
               child:Stack(
@@ -176,8 +175,8 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
                             Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
-                                Text(dateForHumans2(p.date), style: TextStyle(color: _getColorStatus(p.status))),
-                                Text(money(p.abono), style: TextStyle(fontSize: 17, color: _getColorStatus(p.status))),
+                                Text(dateForHumans2(p.date), style: TextStyle(color: _getColorStatus(p.status, p.diasMora))),
+                                Text(money(p.abono), style: TextStyle(fontSize: 17, color: _getColorStatus(p.status, p.diasMora))),
                               ],
                             ),
 
@@ -223,7 +222,12 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
       _error = res.message;
     }
     _loader = false;
-    setState(() {});
+    _rety();
+  }
+
+  void _rety(){
+    setState(() {
+    });
   }
 
   /* Métodos */
@@ -242,12 +246,15 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
   void _generarAbono() async {
     String monto = await inputDialog(context,
         title: "Ingrese el monto", decoration: "Cantidad");
-
     Responser res =
         await PaymentProvider().abonoPorCredito(1, parseDouble(monto));
 
     if (res.ok) {
-      toast(res.message, type: 'ok');
+      toast("Abono realizado con exito", type: 'ok');
+      listaRecibida = List<DataPay>.from(res.data.map((x) => DataPay.fromJson(x)));
+      _payList.totalPagado = _payList.totalPagado + parseDouble(monto);
+      _changeInfoPays();
+      print(listaRecibida.length);
     } else {
       toast(res.message, type: 'err');
     }
@@ -279,27 +286,69 @@ class _ListsPaymentsPageState extends State<ListsPaymentsPage> {
     // int id, List<Payment> pay) async {
     Responser res = await PaymentProvider().payForCredit(1, _selectedPays);
 
-    _selectedPays.clear();
+    // _selectedPays.clear();
     _payList.payments.forEach((element) {
       element.selected = false;
     });
     _multiple = false;
 
+    if(_selectedPays.length == 1){
+      _payList.totalPagado = _payList.totalPagado + _selectedPays.first.total;
+    }
+    if(_selectedPays.length > 1){
+      _payList.totalPagado = _payList.totalPagado + total;
+    }
+
     if (res.ok) {
       toast("Pagos realizados", type: 'ok');
-      _selectedPays.clear();
+      _changStatus();
+      // _selectedPays.clear();
     } else {
       toast(res.message, type: 'err');
     }
+
+    _rety();
   }
 
-  Color _getColorStatus(int status) {
+  void _changStatus(){
+    for (var paysItem in _selectedPays) {
+      _payList.payments.forEach((element) { 
+        if(element.id == paysItem.pay){
+          element.status = PaymentRow.COBRADO;
+        }
+      });
+    }
+    _selectedPays.clear();
+    _rety();
+  }
+
+  void _changeInfoPays(){
+    for (var paysRecibida in listaRecibida) {
+      _payList.payments.forEach((element) { 
+        if(element.id == paysRecibida.id){
+          element.diasMora = paysRecibida.diasMora;
+          element.abono = paysRecibida.abono;
+          element.status = paysRecibida.status;
+        }
+      });
+    }
+    // _selectedPays.clear();
+    _rety();
+  }
+
+
+
+  Color _getColorStatus(int status, int dias) {
     switch (status) {
       case 1:
         return Colors.black54;
         break;
       case 2:
+        if(dias > 0){
+          return Colors.orange;
+        }else{
         return Colors.green;
+        }
         break;
       case -1:
         return Colors.red;
