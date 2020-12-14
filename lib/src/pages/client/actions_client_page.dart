@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pagosapp/src/models/client/client_history.dart';
 import 'package:pagosapp/src/pages/client/edit_client_page.dart';
-import 'package:pagosapp/src/pages/payments/lists_payments.dart';
+import 'package:pagosapp/src/pages/credit/history_client_credit_page.dart';
+import 'package:pagosapp/src/pages/payments/list_payment_page.dart';
 
 class ActionsClient extends StatefulWidget {
   final ClientHistory clientData;
@@ -49,7 +50,7 @@ class _ActionsClientState extends State<ActionsClient> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ListsPaymentsPage(
+                        builder: (context) => ListPaymentPage(
                               client: widget.clientData,
                             )));
               }),
@@ -57,7 +58,12 @@ class _ActionsClientState extends State<ActionsClient> {
                   icon: FontAwesomeIcons.history,
                   color: Colors.indigo,
                   text: 'Historial de Crédito', click: () {
-                Navigator.pushNamed(context, 'client_list');
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => HistoryClientCreditPage(
+                               widget.clientData,
+                            )));
               }),
             ],
           ),

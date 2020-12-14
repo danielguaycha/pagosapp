@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:pagosapp/src/utils/validators.dart';
+
 class PaymentRow {
 
     static const MORA = -1;
@@ -45,13 +47,13 @@ class PaymentRow {
     factory PaymentRow.fromMap(Map<String, dynamic> json) => PaymentRow(
         cobro: json["cobro"],
         id: json["id"],
-        creditId: json["credit_id"],
-        total: json["total"].toDouble(),
-        status: json["status"],
-        mora: json["mora"],
+        creditId: parseInt(json["credit_id"]),
+        total: parseDouble(json["total"]),
+        status: parseInt(json["status"]),
+        mora: parseInt(json["mora"]),
         number: json["number"],
         description: json["description"],
-        clientId: json["client_id"],
+        clientId: parseInt(json["client_id"]),
         clientName: json["client_name"],
         addressA: json["address_a"],
         cityA: json["city_a"],

@@ -4,61 +4,52 @@
 
 import 'dart:convert';
 
-import 'package:pagosapp/src/models/payments/payment_history.dart';
 import 'package:pagosapp/src/utils/validators.dart';
 
 class CreditHistory {
-    CreditHistory({
-        this.name,
-        this.id,
-        this.monto,
-        this.utilidad,
-        this.total,
-        this.description,
-        this.status,
-        this.totalPagado,
-        this.payments,
-        this.pagados
-    });
+  static const STATUS_ANULADO = 0;
+  static const STATUS_ACTIVO = 1;
+  static const STATUS_FINALIZADO = 2;
 
-    String name;
-    int id;
-    double monto;
-    double utilidad;
-    double total;
-    String description;
-    int status;
-    double totalPagado;
-    int pagados;
-    List<PaymentHistory> payments;
+  CreditHistory({
+    this.fInicio,
+    this.fFin,
+    this.mora,
+    this.total,
+    this.plazo,
+    this.cobro,
+    this.status,
+  });
 
-    factory CreditHistory.fromJson(String str) => CreditHistory.fromMap(json.decode(str));
+  DateTime fInicio;
+  DateTime fFin;
+  int mora;
+  double total;
+  String plazo;
+  String cobro;
+  int status;
 
-    String toJson() => json.encode(toMap());
+  factory CreditHistory.fromJson(String str) => CreditHistory.fromMap(json.decode(str));
 
-    factory CreditHistory.fromMap(Map<String, dynamic> json) => CreditHistory(
-        name: json["name"],
-        id: json["id"],
-        monto: parseDouble(json["monto"]),
-        utilidad: parseDouble(json["utilidad"]),
-        total: parseDouble(json["total"]),
-        description: json["description"],
-        status: json["status"],
-        totalPagado: parseDouble(json["total_pagado"]),
-        pagados: parseInt(json['pagados']),
-        payments: List<PaymentHistory>.from(json["payments"].map((x) => PaymentHistory.fromMap(x))),
-    );
+  String toJson() => json.encode(toMap());
 
-    Map<String, dynamic> toMap() => {
-        "name": name,
-        "id": id,
-        "monto": monto,
-        "utilidad": utilidad,
-        "total": total,
-        "description": description,
-        "status": status,
-        "total_pagado": totalPagado,
-        "pagados": pagados,
-        "payments": List<dynamic>.from(payments.map((x) => x.toMap())),
-    };
+  factory CreditHistory.fromMap(Map<String, dynamic> json) => CreditHistory(
+    fInicio: DateTime.parse(json["f_inicio"]),
+    fFin: DateTime.parse(json["f_fin"]),
+    mora: parseInt(json["mora"]),
+    total: parseDouble(json["total"]),
+    plazo: json["plazo"],
+    cobro: json["cobro"],
+    status: parseInt(json["status"]),
+  );
+
+  Map<String, dynamic> toMap() => {
+    "f_inicio": "${fInicio.year.toString().padLeft(4, '0')}-${fInicio.month.toString().padLeft(2, '0')}-${fInicio.day.toString().padLeft(2, '0')}",
+    "f_fin": "${fFin.year.toString().padLeft(4, '0')}-${fFin.month.toString().padLeft(2, '0')}-${fFin.day.toString().padLeft(2, '0')}",
+    "mora": mora,
+    "total": total,
+    "plazo": plazo,
+    "cobro": cobro,
+    "status": status,
+  };
 }

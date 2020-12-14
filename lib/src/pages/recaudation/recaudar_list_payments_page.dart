@@ -8,14 +8,14 @@ import 'package:pagosapp/src/providers/payment_provider.dart';
 import 'package:pagosapp/src/utils/exepctions.dart';
 import 'package:pagosapp/src/utils/utils.dart';
 import 'package:pagosapp/src/utils/validators.dart';
-class ListPaymentPage extends StatefulWidget {
-  ListPaymentPage({Key key}) : super(key: key);
+class RacaudarListPayment extends StatefulWidget {
+  RacaudarListPayment({Key key}) : super(key: key);
 
   @override
-  _ListPaymentPageState createState() => _ListPaymentPageState();
+  _RacaudarListPaymentState createState() => _RacaudarListPaymentState();
 }
 
-class _ListPaymentPageState extends State<ListPaymentPage> {
+class _RacaudarListPaymentState extends State<RacaudarListPayment> {
 
   List<PaymentRow> _pays;
   PaymentProvider _paymentProvider = PaymentProvider();

@@ -9,6 +9,7 @@ import 'package:pagosapp/src/pages/client/list_client_page.dart';
 import 'package:pagosapp/src/pages/client/new_client_page.dart';
 import 'package:pagosapp/src/pages/credit/widgets/credit_calc_component.dart';
 import 'package:pagosapp/src/pages/home_page.dart';
+import 'package:pagosapp/src/pages/payments/show_list_payments.dart';
 import 'package:pagosapp/src/plugins/messages.dart';
 import 'package:pagosapp/src/plugins/progress_loader.dart';
 import 'package:pagosapp/src/plugins/style.dart';
@@ -57,16 +58,25 @@ class _AddCreditPageState extends State<AddCreditPage> {
 
     Responser res = await CreditProvider().store(_credit);
     if (res.ok) {
-      _credit = new Credit();
-      _client = null;
+      _client.credit = res.data['id'];
+      _loader.hide();
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => ShowListPaymentPage(
+                client: _client,
+              )));
       _scaffoldKey.currentState
-          .showSnackBar(customSnack("Crédito procesado con exito"));
+          .showSnackBar(customSnack("Crédito procesado con éxito"));
+      _credit = new Credit();
+      setState(() {});
     } else {
       _scaffoldKey.currentState
           .showSnackBar(customSnack(res.message, type: 'err'));
+      _loader.hide();
+      setState(() {});
     }
-    _loader.hide();
-    setState(() {});
+
   }
 
   bool _validate() {

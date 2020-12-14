@@ -30,6 +30,7 @@ class Client {
     DateTime createdAt;    
     File refOne;
     File refTwo;
+    bool activeCredit;
 
     Client({
         this.id,
@@ -52,7 +53,8 @@ class Client {
         this.createdAt,
         this.refOne,
         this.refTwo,
-        this.rank,        
+        this.rank,     
+        this.activeCredit   
     });
 
     factory Client.fromJson(String str) => Client.fromMap(json.decode(str));
@@ -76,7 +78,8 @@ class Client {
         lngB: parseDouble(json["lng_b"]),
         refA: json["ref_a"],
         refB: json["ref_b"],
-        userId: json["user_id"],           
+        userId: parseInt(json["user_id"]),         
+        activeCredit: parseBool(json['active_credit']),  
         updatedAt: json["updated_at"] != null ? DateTime.parse(json["updated_at"]) : null,
         createdAt: json["created_at"] != null ? DateTime.parse(json["created_at"]) : null,
     );
@@ -101,6 +104,7 @@ class Client {
         "user_id": userId,        
         "updated_at": updatedAt.toIso8601String(),
         "created_at": createdAt.toIso8601String(),
+        "active_credit": activeCredit
     };
 
     getColor() {

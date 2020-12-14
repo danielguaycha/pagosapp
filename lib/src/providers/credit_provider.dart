@@ -27,4 +27,9 @@ class CreditProvider {
     }
   }
 
+  Future<Responser> showForClient(clientId) async{
+    Response res = await _http.get("/credit/history/$clientId");
+    return Responser.fromJson(res.data);
+  }
+
 }

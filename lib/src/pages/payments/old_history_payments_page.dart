@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:pagosapp/src/models/credit/credit_history.dart';
+import 'package:pagosapp/src/models/credit/credit_show.dart';
 import 'package:pagosapp/src/pages/payments/widgets/history_payments_body.dart';
 import 'package:pagosapp/src/providers/payment_provider.dart';
 import 'package:pagosapp/src/utils/exepctions.dart';
@@ -47,7 +47,7 @@ class _ListPaymentsPageState extends State<ListPaymentsPage> {
               return renderNotFoundData("No tienes rutas asignadas aún");
             }
 
-            CreditHistory c = CreditHistory.fromJson(json.encode((results)));
+            CreditShow c = CreditShow.fromJson(json.encode((results)));
 
             return bodyPayments(c);
           },

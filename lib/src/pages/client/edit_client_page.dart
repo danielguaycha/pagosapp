@@ -473,6 +473,9 @@ class _EditClientPageState extends State<EditClientPage> {
   }
 
   void _openCredit() {
+    if(_client.activeCredit) { // si tiene un crédito activo solo actualiza los datos
+      return;
+    }
     ClientHistory clientHistory = new ClientHistory();
     clientHistory.name = _client.name;
     clientHistory.id = _client.id;    

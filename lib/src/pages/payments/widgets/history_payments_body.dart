@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:pagosapp/src/models/credit/credit_history.dart';
+import 'package:pagosapp/src/models/credit/credit_show.dart';
 import 'package:pagosapp/src/models/payments/payment_history.dart';
 import 'package:pagosapp/src/pages/payments/widgets/history_payments_slideable.dart';
 import 'package:pagosapp/src/utils/validators.dart';
 
-Widget bodyPayments(CreditHistory c) {
+Widget bodyPayments(CreditShow c) {
   return Column(
     children: <Widget>[
       _labelClient(contenido: "${c.name}".toUpperCase()),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:pagosapp/src/models/payments/payment_row.dart';
 import 'package:pagosapp/src/pages/payments/actions/payments_actions.dart';
-import 'package:pagosapp/src/pages/payments/history_payments_page.dart';
+import 'package:pagosapp/src/pages/payments/old_history_payments_page.dart';
 import 'package:pagosapp/src/plugins/messages.dart';
 import 'package:pagosapp/src/utils/validators.dart';
 

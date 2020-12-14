@@ -1,6 +1,8 @@
 
 import 'dart:convert';
 
+import 'package:pagosapp/src/utils/validators.dart';
+
 class PaymentHistory {
     static const MORA = -1;
     static const PENDIENTE = 1;
@@ -27,10 +29,10 @@ class PaymentHistory {
 
     factory PaymentHistory.fromMap(Map<String, dynamic> json) => PaymentHistory(
         id: json["id"],
-        total: json["total"].toDouble(),
-        status: json["status"],
+        total: parseDouble(json["total"]),
+        status: parseInt(json["status"]),
         number: json["number"],
-        mora: json["mora"],
+        mora: parseInt(json["mora"]),
         date: DateTime.parse(json["date"]),
     );
 

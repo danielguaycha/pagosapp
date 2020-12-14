@@ -89,3 +89,16 @@ String dateForHumans2(DateTime currentTime) {
   }
   return "${currentTime.day}/${currentTime.month}/${currentTime.year}";
 }
+
+bool isAfter(DateTime date){
+  return date.isAfter(DateTime.now());
+}
+
+bool isBefore(DateTime date){
+  return date.isBefore(DateTime.now());
+}
+
+bool isToday(DateTime date) {
+  int diffDays = date.difference(DateTime.now()).inDays;
+  return (diffDays == 0);
+}
