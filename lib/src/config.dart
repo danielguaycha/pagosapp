@@ -1,7 +1,10 @@
 
+import 'package:flutter/material.dart';
 import 'package:pagosapp/env.dart';
 
+// importante al hacer releases
 const debug = true;
+// const debug = true;
 const buildVersion = 1.0; // incrementar segun la actualización en el server
 
 const urlProduction = 'app.detzerg.company';
@@ -9,6 +12,13 @@ const urlDebug = server;
 
 const appName = "PayApp";
 const urlApi = "http://${(debug == true ? urlDebug : urlProduction )}/api";
+
+const colors = {
+    'primary': Color(0xFF1C2230),
+    'accent': Color(0xFFFF9900),
+    'primaryDark': Color(0xFF0E121B),
+};
+
 
 const Map<String, String> cobros = {
     'DIARIO': 'Diario',

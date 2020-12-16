@@ -3,6 +3,7 @@
 */
 
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:easy_alert/easy_alert.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,8 @@ import 'package:pagosapp/src/plugins/image_net.dart';
 import 'package:pagosapp/src/plugins/messages.dart';
 import 'package:pagosapp/src/plugins/style.dart';
 import 'package:pagosapp/src/utils/validators.dart';
+
+import '../config.dart';
 
 // confirm
 Future<bool> confirm(context,
@@ -251,4 +254,55 @@ Widget swicthSubtitle({text: ''}) {
   return Row(
     children: <Widget>[Text("$text", style: TextStyle(fontSize: 12))],
   );
+}
+
+// Process Error
+Map<String, dynamic> processError(error) {
+  if (error is DioError) {
+    DioError e = error;
+    if (debug) {
+      debugPrint(e.message);
+    }
+    if (e.response != null && e.response.data != null) {
+      String msg = '';
+      if (e.response.data['message'] != null &&
+          e.response.data['errors'] == null)
+        msg = e.response.data['message'];
+      else if (e.response.data['error'] != null)
+        msg = e.response.data['error'];
+      else if (e.response.data['errors'] != null) {
+        List<dynamic> errs = e.response.data['errors'];
+        errs.forEach((f) {
+          if (f.length > 0) {
+            String err = (f[0]).toString();
+            msg += err + ", ";
+          }
+        });
+        msg += "--";
+        msg = msg.replaceAll(", --", "");
+      } else {
+        msg = 'Error desconocido en la respuesta, contacte a soporte #1';
+      }
+      return {'ok': false, 'message': msg};
+    } else {
+      if (e.type == DioErrorType.DEFAULT) {
+        print("ERROR: $error ");
+        return {
+          'ok': false,
+          'message': "No se pudo comunicar con el servidor #2"
+        };
+      }
+      if (e.type == DioErrorType.CONNECT_TIMEOUT) {
+        return {
+          'ok': false,
+          'message': "El servidor no responde, contacte con soporte #3"
+        };
+      }
+      return {
+        'ok': false,
+        'message': "Error desconocido con el servidor, contacte con soporte! #4"
+      };
+    }
+  }
+  return {'ok': false, 'message': 'Error desconocido, contacte con soporte #5'};
 }

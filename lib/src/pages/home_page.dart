@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pagosapp/src/pages/index_page.dart';
+// import 'package:pagosapp/src/pages/payments/add_expense_page.dart';
+import 'package:pagosapp/src/pages/payments/list_expense_page.dart';
 import 'package:pagosapp/src/plugins/style.dart';
 
 class HomePage extends StatefulWidget {
@@ -18,6 +20,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _children = [
       IndexPage(),
+      ListExpensePage(),
       Center(child: Text("Hola")),
   ]; 
 
@@ -63,6 +66,10 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: new Icon(Icons.home),
             title: Text("Home"),
+          ),          
+          BottomNavigationBarItem(
+            icon: new Icon(Icons.plus_one),
+            title: Text("Gastos"),
           ),          
           BottomNavigationBarItem(
               icon: Icon(Icons.person),
