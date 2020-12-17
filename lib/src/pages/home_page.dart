@@ -68,10 +68,6 @@ class _HomePageState extends State<HomePage> {
             title: Text("Home"),
           ),          
           BottomNavigationBarItem(
-            icon: new Icon(Icons.plus_one),
-            title: Text("Gastos"),
-          ),          
-          BottomNavigationBarItem(
               icon: Icon(Icons.person),
               title: Text('Usuario')
           )
