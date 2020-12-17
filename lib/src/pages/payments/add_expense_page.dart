@@ -15,10 +15,14 @@ import 'package:pagosapp/src/providers/expense_provider.dart';
 import '../../config.dart';
 import '../../utils/utils.dart';
 import 'package:path/path.dart';
-// import 'package:paycapp/src/config.dart' show categorias;
+import 'package:flutter/services.dart' show TextInputType;
 
+// import 'package:paycapp/src/config.dart' show categorias;
+  // final _amountValidator =      .withRegex('^\$|^(0|([1-9][0-9]{0,}))(\\.[0-9]{0,})?\$');
+  // final _amountValidator = RegExInputFormatter.withRegex('^\$|^(0|([1-9][0-9]{0,}))(\\.[0-9]{0,})?\$');
 
 class AddExpensePage extends StatefulWidget {
+
   AddExpensePage({Key key}) : super(key: key);
 
   @override
@@ -26,6 +30,7 @@ class AddExpensePage extends StatefulWidget {
 }
 
 class _AddExpensePageState extends State<AddExpensePage> {
+
 
   //Variables
   double _monto = 0.0;
@@ -97,9 +102,9 @@ class _AddExpensePageState extends State<AddExpensePage> {
       enableInteractiveSelection: false,
       controller:  _inputFieldDateController,
       decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
-          ),
+          // border: OutlineInputBorder(
+          //   borderRadius: BorderRadius.circular(10.0),
+          // ),
           hintText: "Fecha",
           icon: Icon(Icons.calendar_today)),
       onTap: () {
@@ -160,9 +165,12 @@ class _AddExpensePageState extends State<AddExpensePage> {
   // Monto
   Widget _montoField() {
     return TextFormField(
-      //initialValue: "",
+      inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),],
       controller: _controllerMonto,
-      keyboardType: TextInputType.numberWithOptions(decimal: true),
+      keyboardType: TextInputType.number,
+      // numberWithOptions(
+      //   decimal: true
+      //   ),
       decoration: InputDecoration(
         labelText: 'Monto ${money("")}*',
         hintText: money(null),

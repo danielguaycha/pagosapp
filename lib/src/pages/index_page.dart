@@ -41,6 +41,14 @@ class IndexPage extends StatelessWidget {
                 click: (){
                   Navigator.pushNamed(context, 'payment');
                 }
+            ),            _btn(
+                context,
+                icon: FontAwesomeIcons.moneyCheckAlt,
+                color: Colors.orange,
+                text: 'Gastos',
+                click: (){
+                  Navigator.pushNamed(context, 'expense');
+                }
             ),
           ],
         ),
